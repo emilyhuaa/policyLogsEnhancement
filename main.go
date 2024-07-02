@@ -59,4 +59,15 @@ func main() {
 		fmt.Println(namespace.Name)
 	}
 	fmt.Printf("Total namespaces: %d\n", len(namespaces.Items))
+
+	podIPAddresses, err := pkg.ListPodIPAddresses(namespace, clientset)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	for _, ip := range podIPAddresses {
+		fmt.Println(ip)
+	}
+
 }
