@@ -1,9 +1,10 @@
-package k8s
+package pkg
 
 import (
 	"context"
 	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 

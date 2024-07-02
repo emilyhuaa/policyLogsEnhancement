@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/emilyhuaa/policyLogsEnhancement/pkg"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -32,7 +33,7 @@ func main() {
 	}
 	// An empty string returns all namespaces
 	namespace := "kube-system"
-	pods, err := ListPods(namespace, clientset)
+	pods, err := pkg.ListPods(namespace, clientset)
 	if err != nil {
 		fmt.Println(err.Error)
 		os.Exit(1)
@@ -49,7 +50,7 @@ func main() {
 	fmt.Printf("%s %d\n", message, len(pods.Items))
 
 	//ListNamespaces function call returns a list of namespaces in the kubernetes cluster
-	namespaces, err := ListNamespaces(clientset)
+	namespaces, err := pkg.ListNamespaces(clientset)
 	if err != nil {
 		fmt.Println(err.Error)
 		os.Exit(1)
