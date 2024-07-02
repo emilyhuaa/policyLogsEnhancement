@@ -30,4 +30,32 @@ func main() {
 		fmt.Printf("error getting kubernetes config: %v\n", err)
 		os.Exit(1)
 	}
+	// An empty string returns all namespaces
+	namespace := "kube-system"
+	pods, err := ListPods(namespace, clientset)
+	if err != nil {
+		fmt.Println(err.Error)
+		os.Exit(1)
+	}
+	for _, pod := range pods.Items {
+		fmt.Printf("Pod name: %v\n", pod.Name)
+	}
+	var message string
+	if namespace == "" {
+		message = "Total Pods in all namespaces"
+	} else {
+		message = fmt.Sprintf("Total Pods in namespace `%s`", namespace)
+	}
+	fmt.Printf("%s %d\n", message, len(pods.Items))
+
+	//ListNamespaces function call returns a list of namespaces in the kubernetes cluster
+	namespaces, err := ListNamespaces(clientset)
+	if err != nil {
+		fmt.Println(err.Error)
+		os.Exit(1)
+	}
+	for _, namespace := range namespaces.Items {
+		fmt.Println(namespace.Name)
+	}
+	fmt.Printf("Total namespaces: %d\n", len(namespaces.Items))
 }
