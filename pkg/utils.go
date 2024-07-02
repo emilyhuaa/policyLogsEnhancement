@@ -14,7 +14,7 @@ func ListPods(namespace string, client kubernetes.Interface) (*v1.PodList, error
 	fmt.Println("Get Kubernetes Pods")
 	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		err = fmt.Errorf("error getting pods: %v\n", err)
+		err = fmt.Errorf("error getting pods: %v", err)
 		return nil, err
 	}
 	return pods, nil
@@ -25,7 +25,7 @@ func ListNamespaces(client kubernetes.Interface) (*v1.NamespaceList, error) {
 	fmt.Println("Get Kubernetes Namespaces")
 	namespaces, err := client.CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		err = fmt.Errorf("error getting namespaces: %v\n", err)
+		err = fmt.Errorf("error getting namespaces: %v", err)
 		return nil, err
 	}
 	return namespaces, nil

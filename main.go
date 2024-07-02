@@ -35,7 +35,7 @@ func main() {
 	namespace := "kube-system"
 	pods, err := pkg.ListPods(namespace, clientset)
 	if err != nil {
-		fmt.Println(err.Error)
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 	for _, pod := range pods.Items {
@@ -52,7 +52,7 @@ func main() {
 	//ListNamespaces function call returns a list of namespaces in the kubernetes cluster
 	namespaces, err := pkg.ListNamespaces(clientset)
 	if err != nil {
-		fmt.Println(err.Error)
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 	for _, namespace := range namespaces.Items {
