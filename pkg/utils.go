@@ -11,7 +11,6 @@ import (
 
 // ListPods lists Kubernetes Pods by namespace(s)
 func ListPods(namespace string, client kubernetes.Interface) (*v1.PodList, error) {
-	fmt.Println("Get Kubernetes Pods")
 	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		err = fmt.Errorf("error getting pods: %v", err)
@@ -21,29 +20,27 @@ func ListPods(namespace string, client kubernetes.Interface) (*v1.PodList, error
 }
 
 // ListNamespaces lists all Namespaces
-func ListNamespaces(client kubernetes.Interface) (*v1.NamespaceList, error) {
-	fmt.Println("Get Kubernetes Namespaces")
-	namespaces, err := client.CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		err = fmt.Errorf("error getting namespaces: %v", err)
-		return nil, err
-	}
-	return namespaces, nil
-}
+// func ListNamespaces(client kubernetes.Interface) (*v1.NamespaceList, error) {
+// 	namespaces, err := client.CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
+// 	if err != nil {
+// 		err = fmt.Errorf("error getting namespaces: %v", err)
+// 		return nil, err
+// 	}
+// 	return namespaces, nil
+// }
 
 // ListPodIPAddresses lists all IP addresses of pods by namespace(s)
-func ListPodIPAddresses(namespace string, client kubernetes.Interface) ([]string, error) {
-	fmt.Println("Get Kubernetes Pod IP addresses")
-	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		err = fmt.Errorf("error getting pods: %v", err)
-		return nil, err
-	}
+// func ListPodIPAddresses(namespace string, client kubernetes.Interface) ([]string, error) {
+// 	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
+// 	if err != nil {
+// 		err = fmt.Errorf("error getting pods: %v", err)
+// 		return nil, err
+// 	}
 
-	var podIPAddresses []string
-	for _, pod := range pods.Items {
-		podIPAddresses = append(podIPAddresses, pod.Status.PodIP)
-	}
+// 	var podIPAddresses []string
+// 	for _, pod := range pods.Items {
+// 		podIPAddresses = append(podIPAddresses, pod.Status.PodIP)
+// 	}
 
-	return podIPAddresses, nil
-}
+// 	return podIPAddresses, nil
+// }

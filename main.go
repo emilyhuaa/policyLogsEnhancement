@@ -31,43 +31,55 @@ func main() {
 		fmt.Printf("error getting kubernetes config: %v\n", err)
 		os.Exit(1)
 	}
-	// An empty string returns all namespaces
-	namespace := "kube-system"
+
+	namespace := "" // An empty string returns all namespaces
 	pods, err := pkg.ListPods(namespace, clientset)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+	// for _, pod := range pods.Items {
+	// 	fmt.Printf("Pod IP: %v\n", pod.Status.PodIP)
+	// }
+	// var message string
+	// if namespace == "" {
+	// 	message = "Total Pods in all namespaces"
+	// } else {
+	// 	message = fmt.Sprintf("Total Pods in namespace `%s`", namespace)
+	// }
+	// fmt.Printf("%s %d\n", message, len(pods.Items))
+
+	// namespaces, err := pkg.ListNamespaces(clientset)
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	os.Exit(1)
+	// }
+	// for _, namespace := range namespaces.Items {
+	// 	fmt.Println(namespace.Name)
+	// }
+	// fmt.Printf("Total namespaces: %d\n", len(namespaces.Items))
+
+	// podIPAddresses, err := pkg.ListPodIPAddresses(namespace, clientset)
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	os.Exit(1)
+	// }
+
+	// for _, ip := range podIPAddresses {
+	// 	fmt.Println(ip)
+	// }
+
+	podInfoCache := make(map[string]string)
 	for _, pod := range pods.Items {
-		fmt.Printf("Pod name: %v\n", pod.Name)
-	}
-	var message string
-	if namespace == "" {
-		message = "Total Pods in all namespaces"
-	} else {
-		message = fmt.Sprintf("Total Pods in namespace `%s`", namespace)
-	}
-	fmt.Printf("%s %d\n", message, len(pods.Items))
-
-	//ListNamespaces function call returns a list of namespaces in the kubernetes cluster
-	namespaces, err := pkg.ListNamespaces(clientset)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	for _, namespace := range namespaces.Items {
-		fmt.Println(namespace.Name)
-	}
-	fmt.Printf("Total namespaces: %d\n", len(namespaces.Items))
-
-	podIPAddresses, err := pkg.ListPodIPAddresses(namespace, clientset)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		podIP := pod.Status.PodIP
+		podName := pod.Name
+		podNamespace := pod.Namespace
+		podInfoCache[podIP] = fmt.Sprintf("%s/%s", podName, podNamespace)
 	}
 
-	for _, ip := range podIPAddresses {
-		fmt.Println(ip)
+	fmt.Println("Pod IP Address -> Pod Name/Namespace:")
+	for ip, info := range podInfoCache {
+		fmt.Printf("%s -> %s\n", ip, info)
 	}
 
 }
