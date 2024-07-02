@@ -31,6 +31,7 @@ func ListNamespaces(client kubernetes.Interface) (*v1.NamespaceList, error) {
 	return namespaces, nil
 }
 
+// ListPodIPAddresses lists all IP addresses of pods by namespace(s)
 func ListPodIPAddresses(namespace string, client kubernetes.Interface) ([]string, error) {
 	fmt.Println("Get Kubernetes Pod IP addresses")
 	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
