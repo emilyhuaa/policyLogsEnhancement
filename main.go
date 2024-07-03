@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/emilyhuaa/policyLogsEnhancement/pkg"
 	"k8s.io/client-go/kubernetes"
@@ -38,48 +39,33 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	// for _, pod := range pods.Items {
-	// 	fmt.Printf("Pod IP: %v\n", pod.Status.PodIP)
-	// }
-	// var message string
-	// if namespace == "" {
-	// 	message = "Total Pods in all namespaces"
-	// } else {
-	// 	message = fmt.Sprintf("Total Pods in namespace `%s`", namespace)
-	// }
-	// fmt.Printf("%s %d\n", message, len(pods.Items))
 
-	// namespaces, err := pkg.ListNamespaces(clientset)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// 	os.Exit(1)
-	// }
-	// for _, namespace := range namespaces.Items {
-	// 	fmt.Println(namespace.Name)
-	// }
-	// fmt.Printf("Total namespaces: %d\n", len(namespaces.Items))
-
-	// podIPAddresses, err := pkg.ListPodIPAddresses(namespace, clientset)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// 	os.Exit(1)
-	// }
-
-	// for _, ip := range podIPAddresses {
-	// 	fmt.Println(ip)
-	// }
-
-	podInfoCache := make(map[string]string)
+	podInfoCache := make(map[string][]string)
 	for _, pod := range pods.Items {
 		podIP := pod.Status.PodIP
 		podName := pod.Name
 		podNamespace := pod.Namespace
-		podInfoCache[podIP] = fmt.Sprintf("%s/%s", podName, podNamespace)
+		podInfo := fmt.Sprintf("%s/%s", podName, podNamespace)
+		podInfoCache[podIP] = append(podInfoCache[podIP], podInfo)
 	}
 
-	fmt.Println("Pod IP Address -> Pod Name/Namespace:")
+	fmt.Println("Pod IP Address : Pod Name/Namespace:")
 	for ip, info := range podInfoCache {
-		fmt.Printf("%s -> %s\n", ip, info)
+		fmt.Printf("%s : %s\n", ip, info)
+	}
+
+	ipAddress := "192.168.54.13"
+
+	if podInfoList, ok := podInfoCache[ipAddress]; ok {
+		fmt.Printf("Pod IP Address: %s\n", ipAddress)
+		for _, podInfo := range podInfoList {
+			parts := strings.Split(podInfo, "/")
+			podN := parts[0]
+			podNS := parts[1]
+			fmt.Printf("Pod Name: %s, Namespace: %s\n", podN, podNS)
+		}
+	} else {
+		fmt.Printf("No pods found for IP address: %s\n", ipAddress)
 	}
 
 }
