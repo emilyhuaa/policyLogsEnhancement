@@ -45,6 +45,12 @@ func main() {
 		podIP := pod.Status.PodIP
 		podName := pod.Name
 		podNamespace := pod.Namespace
+		nodeIP := pod.Status.HostIP
+
+		if podIP == nodeIP {
+			continue
+		}
+
 		podInfo := fmt.Sprintf("%s/%s", podName, podNamespace)
 		podInfoCache[podIP] = append(podInfoCache[podIP], podInfo)
 	}
@@ -54,7 +60,7 @@ func main() {
 		fmt.Printf("%s : %s\n", ip, info)
 	}
 
-	ipAddress := "192.168.54.13"
+	ipAddress := "192.168.77.216"
 
 	if podInfoList, ok := podInfoCache[ipAddress]; ok {
 		fmt.Printf("Pod IP Address: %s\n", ipAddress)
