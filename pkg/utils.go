@@ -15,8 +15,8 @@ type PodInfo struct {
 }
 
 // ListPods lists Kubernetes Pods by namespace(s)
-func ListPods(namespace string, client kubernetes.Interface) (*v1.PodList, error) {
-	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
+func ListPods(client kubernetes.Interface) (*v1.PodList, error) {
+	pods, err := client.CoreV1().Pods("").List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		err = fmt.Errorf("error getting pods: %v", err)
 		return nil, err

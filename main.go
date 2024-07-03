@@ -33,8 +33,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	namespace := "" // An empty string returns all namespaces
-
 	podInfoCache := make(map[string][]pkg.PodInfo)
 	var cacheMutex sync.Mutex
 
@@ -42,7 +40,7 @@ func main() {
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		for range ticker.C {
-			pods, err := pkg.ListPods(namespace, clientset)
+			pods, err := pkg.ListPods(clientset)
 			if err != nil {
 				fmt.Println(err.Error())
 				continue
