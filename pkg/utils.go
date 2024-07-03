@@ -9,6 +9,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+type PodInfo struct {
+	Name      string
+	Namespace string
+}
+
 // ListPods lists Kubernetes Pods by namespace(s)
 func ListPods(namespace string, client kubernetes.Interface) (*v1.PodList, error) {
 	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
@@ -17,4 +22,26 @@ func ListPods(namespace string, client kubernetes.Interface) (*v1.PodList, error
 		return nil, err
 	}
 	return pods, nil
+}
+
+// CachePods caches pod information by node IP address
+func CachePods(pods []v1.Pod) map[string][]PodInfo {
+	podInfoCache := make(map[string][]PodInfo)
+	for _, pod := range pods {
+		podIP := pod.Status.PodIP
+		podName := pod.Name
+		podNamespace := pod.Namespace
+		nodeIP := pod.Status.HostIP
+
+		if podIP == nodeIP {
+			continue
+		}
+
+		podInfo := PodInfo{
+			Name:      podName,
+			Namespace: podNamespace,
+		}
+		podInfoCache[podIP] = append(podInfoCache[podIP], podInfo)
+	}
+	return podInfoCache
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/emilyhuaa/policyLogsEnhancement/pkg"
 	"k8s.io/client-go/kubernetes"
@@ -40,24 +39,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	podInfoCache := make(map[string][]string)
-	for _, pod := range pods.Items {
-		podIP := pod.Status.PodIP
-		podName := pod.Name
-		podNamespace := pod.Namespace
-		nodeIP := pod.Status.HostIP
-
-		if podIP == nodeIP {
-			continue
-		}
-
-		podInfo := fmt.Sprintf("%s/%s", podName, podNamespace)
-		podInfoCache[podIP] = append(podInfoCache[podIP], podInfo)
-	}
+	podInfoCache := pkg.CachePods(pods.Items)
 
 	fmt.Println("Pod IP Address : Pod Name/Namespace:")
-	for ip, info := range podInfoCache {
-		fmt.Printf("%s : %s\n", ip, info)
+	for ip, podInfoList := range podInfoCache {
+		for _, podInfo := range podInfoList {
+			fmt.Printf("%s : %s,%s\n", ip, podInfo.Name, podInfo.Namespace)
+		}
 	}
 
 	ipAddress := "192.168.77.216"
@@ -65,10 +53,7 @@ func main() {
 	if podInfoList, ok := podInfoCache[ipAddress]; ok {
 		fmt.Printf("Pod IP Address: %s\n", ipAddress)
 		for _, podInfo := range podInfoList {
-			parts := strings.Split(podInfo, "/")
-			podN := parts[0]
-			podNS := parts[1]
-			fmt.Printf("Pod Name: %s, Namespace: %s\n", podN, podNS)
+			fmt.Printf("Pod Name: %s, Namespace: %s\n", podInfo.Name, podInfo.Namespace)
 		}
 	} else {
 		fmt.Printf("No pods found for IP address: %s\n", ipAddress)
