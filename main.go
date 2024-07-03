@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/emilyhuaa/policyLogsEnhancement/pkg"
 	"k8s.io/client-go/kubernetes"
@@ -33,30 +35,41 @@ func main() {
 	}
 
 	namespace := "" // An empty string returns all namespaces
-	pods, err := pkg.ListPods(namespace, clientset)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
 
-	podInfoCache := pkg.CachePods(pods.Items)
+	podInfoCache := make(map[string][]pkg.PodInfo)
+	var cacheMutex sync.Mutex
 
-	fmt.Println("Pod IP Address : Pod Name/Namespace:")
-	for ip, podInfoList := range podInfoCache {
-		for _, podInfo := range podInfoList {
-			fmt.Printf("%s : %s,%s\n", ip, podInfo.Name, podInfo.Namespace)
+	// Start a goroutine to update the cache every 10 seconds
+	ticker := time.NewTicker(10 * time.Second)
+	go func() {
+		for range ticker.C {
+			pods, err := pkg.ListPods(namespace, clientset)
+			if err != nil {
+				fmt.Println(err.Error())
+				continue
+			}
+
+			cacheMutex.Lock()
+			podInfoCache = pkg.CachePods(pods.Items)
+			cacheMutex.Unlock()
 		}
-	}
+	}()
 
-	ipAddress := "192.168.77.216"
-
-	if podInfoList, ok := podInfoCache[ipAddress]; ok {
-		fmt.Printf("Pod IP Address: %s\n", ipAddress)
-		for _, podInfo := range podInfoList {
-			fmt.Printf("Pod Name: %s, Namespace: %s\n", podInfo.Name, podInfo.Namespace)
+	// Print the cache every 10 seconds
+	go func() {
+		for range ticker.C {
+			cacheMutex.Lock()
+			fmt.Println("Pod IP Address : Pod Name/Namespace:")
+			for ip, podInfoList := range podInfoCache {
+				for _, podInfo := range podInfoList {
+					fmt.Printf("%s : %s/%s\n", ip, podInfo.Name, podInfo.Namespace)
+				}
+			}
+			cacheMutex.Unlock()
 		}
-	} else {
-		fmt.Printf("No pods found for IP address: %s\n", ipAddress)
-	}
+	}()
+
+	// Keep the main goroutine running
+	select {}
 
 }
