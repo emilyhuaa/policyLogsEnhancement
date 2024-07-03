@@ -25,8 +25,13 @@ func ListPods(namespace string, client kubernetes.Interface) (*v1.PodList, error
 }
 
 // CachePods caches pod information by node IP address
-func CachePods(pods []v1.Pod) map[string][]PodInfo {
-	podInfoCache := make(map[string][]PodInfo)
+func CachePods(podInfoCache map[string][]PodInfo, pods []v1.Pod) {
+	// Create a set of IP addresses from the current cache
+	currentIPs := make(map[string]bool)
+	for ip := range podInfoCache {
+		currentIPs[ip] = true
+	}
+
 	for _, pod := range pods {
 		podIP := pod.Status.PodIP
 		podName := pod.Name
@@ -41,7 +46,16 @@ func CachePods(pods []v1.Pod) map[string][]PodInfo {
 			Name:      podName,
 			Namespace: podNamespace,
 		}
-		podInfoCache[podIP] = append(podInfoCache[podIP], podInfo)
+
+		// Set the pod information for the current IP
+		podInfoCache[podIP] = []PodInfo{podInfo}
+
+		// Remove the IP from the set of current IPs
+		delete(currentIPs, podIP)
 	}
-	return podInfoCache
+
+	// Remove any remaining IPs from the cache
+	for ip := range currentIPs {
+		delete(podInfoCache, ip)
+	}
 }
