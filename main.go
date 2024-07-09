@@ -56,7 +56,7 @@ func main() {
 	go func() {
 		for range ticker.C {
 			cacheMutex.Lock()
-			fmt.Println("Pod IP Address : Pod Name/Namespace:")
+			fmt.Println("Pod IP Address : Pod Name/Namespace")
 			for ip, podInfoList := range podInfoCache {
 				for _, podInfo := range podInfoList {
 					fmt.Printf("%s : %s/%s\n", ip, podInfo.Name, podInfo.Namespace)
