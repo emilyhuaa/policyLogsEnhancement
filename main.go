@@ -40,7 +40,7 @@ func main() {
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		for range ticker.C {
-			pods, err := pkg.ListPods(clientset)
+			pods, err := pkg.GetPods(clientset)
 			if err != nil {
 				fmt.Println(err.Error())
 				continue
