@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option go_package = "github.com/emilyhuaa/policyLogsEnhancement/pkg/rpc";
+
+package rpc;
+
+// PodInfo represents information about a pod.
+message PodInfo {
+    // The name of the pod.
+    string name = 1;
+
+    // The namespace of the pod.
+    string namespace = 2;
+}
+
+// PodInfoCacheEntry represents an entry in the podInfoCache.
+message PodInfoCacheEntry {
+    // The IP address of the pod (key).
+    string ip = 1;
+
+    // The pod information (value).
+    PodInfo pod_info = 2;
+}
+
+// GetCacheRequest represents a request to retrieve the podInfoCache.
+message GetCacheRequest {}
+
+// GetCacheReply represents the response containing the podInfoCache.
+message GetCacheReply {
+    // The list of podInfoCache entries.
+    repeated PodInfoCacheEntry entries = 1;
+}
+
+// CacheService defines the RPC service for retrieving the podInfoCache.
+service CacheService {
+    // GetPodInfoCache retrieves the podInfoCache.
+    rpc GetPodInfoCache(GetCacheRequest) returns (GetCacheReply) {}
+}
+
