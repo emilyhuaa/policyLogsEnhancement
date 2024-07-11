@@ -4,36 +4,36 @@ option go_package = "github.com/emilyhuaa/policyLogsEnhancement/pkg/rpc";
 
 package rpc;
 
-// PodInfo represents information about a pod.
-message PodInfo {
-    // The name of the pod.
+// Metadata represents information about a pod/srv.
+message Metadata {
+    // The name of the pod/srv.
     string name = 1;
 
-    // The namespace of the pod.
+    // The namespace of the pod/srv.
     string namespace = 2;
 }
 
-// PodInfoCacheEntry represents an entry in the podInfoCache.
-message PodInfoCacheEntry {
-    // The IP address of the pod (key).
+// MetadataInfoCacheEntry represents an entry in the metadataInfoCache.
+message MetadataCacheEntry {
+    // The IP address of the pod/srv (key).
     string ip = 1;
 
-    // The pod information (value).
-    PodInfo pod_info = 2;
+    // The metadata information (value).
+    metadataInfo metadata_info = 2;
 }
 
-// GetCacheRequest represents a request to retrieve the podInfoCache.
+// GetCacheRequest represents a request to retrieve the metadataInfoCache.
 message GetCacheRequest {}
 
-// GetCacheReply represents the response containing the podInfoCache.
+// GetCacheReply represents the response containing the metadataInfoCache.
 message GetCacheReply {
-    // The list of podInfoCache entries.
-    repeated PodInfoCacheEntry entries = 1;
+    // The list of metadataCache entries.
+    repeated MetadataCacheEntry entries = 1;
 }
 
-// CacheService defines the RPC service for retrieving the podInfoCache.
+// CacheService defines the RPC service for retrieving the metadataCache.
 service CacheService {
-    // GetPodInfoCache retrieves the podInfoCache.
-    rpc GetPodInfoCache(GetCacheRequest) returns (GetCacheReply) {}
+    // GetMetadataCache retrieves the MetadataCache.
+    rpc GetMetadataCache(GetCacheRequest) returns (GetCacheReply) {}
 }
 
