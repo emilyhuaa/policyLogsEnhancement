@@ -19,7 +19,7 @@ message MetadataCacheEntry {
     string ip = 1;
 
     // The metadata information (value).
-    metadataInfo metadata_info = 2;
+    Metadata metadata = 2;
 }
 
 // GetCacheRequest represents a request to retrieve the metadataInfoCache.
