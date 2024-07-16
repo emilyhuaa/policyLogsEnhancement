@@ -1,6 +1,6 @@
 module github.com/emilyhuaa/policyLogsEnhancement
 
-go 1.22.4
+go 1.22
 
 require (
 	google.golang.org/grpc v1.31.0
