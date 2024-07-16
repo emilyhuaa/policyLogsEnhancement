@@ -34,69 +34,38 @@ func GetServices(client kubernetes.Interface) (*v1.ServiceList, error) {
 	return services, nil
 }
 
-// CachePods caches pod information by node IP address
-func CachePods(metadataCache map[string][]Metadata, pods []v1.Pod) {
-	// Create a set of IP addresses from the current cache
-	currentIPs := make(map[string]bool)
-	for ip := range metadataCache {
-		currentIPs[ip] = true
-	}
+// CacheMetadata caches pod and service information by IP address
+func CacheMetadata(metadataCache map[string][]Metadata, pods []v1.Pod, services []v1.Service) {
+	// Create a set of IP addresses from the current pod and service data
+	currentIPs := make(map[string]struct{})
 
 	for _, pod := range pods {
 		podIP := pod.Status.PodIP
 		podName := pod.Name
 		podNamespace := pod.Namespace
-		nodeIP := pod.Status.HostIP
 
-		if podIP == nodeIP {
+		if podIP == pod.Status.HostIP {
 			continue
 		}
 
-		podInfo := Metadata{
-			Name:      podName,
-			Namespace: podNamespace,
-		}
-
-		// Set the pod information for the current IP
-		metadataCache[podIP] = []Metadata{podInfo}
-
-		// Remove the IP from the set of current IPs
-		delete(currentIPs, podIP)
+		metadataCache[podIP] = []Metadata{{Name: podName, Namespace: podNamespace}}
+		currentIPs[podIP] = struct{}{}
 	}
 
-	// Remove any remaining IPs from the cache
-	for ip := range currentIPs {
-		delete(metadataCache, ip)
-	}
-}
-
-// CacheServices caches pod information by node IP address
-func CacheServices(metadataCache map[string][]Metadata, services []v1.Service) {
-	// Create a set of IP addresses from the current cache
-	currentIPs := make(map[string]bool)
-	for ip := range metadataCache {
-		currentIPs[ip] = true
-	}
-
+	// Cache service metadata
 	for _, srv := range services {
 		srvIP := srv.Spec.ClusterIP
 		srvName := srv.Name
 		srvNamespace := srv.Namespace
 
-		srvInfo := Metadata{
-			Name:      srvName,
-			Namespace: srvNamespace,
-		}
-
-		// Set the pod information for the current IP
-		metadataCache[srvIP] = []Metadata{srvInfo}
-
-		// Remove the IP from the set of current IPs
-		delete(currentIPs, srvIP)
+		metadataCache[srvIP] = []Metadata{{Name: srvName, Namespace: srvNamespace}}
+		currentIPs[srvIP] = struct{}{}
 	}
 
-	// Remove any remaining IPs from the cache
-	for ip := range currentIPs {
-		delete(metadataCache, ip)
+	// Remove entries from the cache for IPs that are no longer present
+	for ip := range metadataCache {
+		if _, ok := currentIPs[ip]; !ok {
+			delete(metadataCache, ip)
+		}
 	}
 }

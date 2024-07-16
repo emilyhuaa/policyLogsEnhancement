@@ -36,25 +36,15 @@ func main() {
 	metadataCache := make(map[string][]pkg.Metadata)
 	var cacheMutex sync.Mutex
 
-	// Start a goroutine to update the cache every 10 seconds
-	podTicker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	go func() {
-		for range podTicker.C {
+		for range ticker.C {
 			pods, err := pkg.GetPods(clientset)
 			if err != nil {
 				fmt.Println(err.Error())
 				continue
 			}
 
-			cacheMutex.Lock()
-			pkg.CachePods(metadataCache, pods.Items)
-			cacheMutex.Unlock()
-		}
-	}()
-
-	srvTicker := time.NewTicker(30 * time.Second)
-	go func() {
-		for range srvTicker.C {
 			services, err := pkg.GetServices(clientset)
 			if err != nil {
 				fmt.Println(err.Error())
@@ -62,24 +52,24 @@ func main() {
 			}
 
 			cacheMutex.Lock()
-			pkg.CacheServices(metadataCache, services.Items)
+			pkg.CacheMetadata(metadataCache, pods.Items, services.Items)
 			cacheMutex.Unlock()
 		}
 	}()
 
-	// Print the cache every 10 seconds
-	// go func() {
-	// 	for range ticker.C {
-	// 		cacheMutex.Lock()
-	// 		fmt.Println("Pod IP Address : Pod Name/Namespace")
-	// 		for ip, podInfoList := range metadataCache {
-	// 			for _, podInfo := range podInfoList {
-	// 				fmt.Printf("%s : %s/%s\n", ip, podInfo.Name, podInfo.Namespace)
-	// 			}
-	// 		}
-	// 		cacheMutex.Unlock()
-	// 	}
-	// }()
+	// Print the cache every 30 seconds
+	go func() {
+		for range ticker.C {
+			cacheMutex.Lock()
+			fmt.Println("IP Address : Name/Namespace")
+			for ip, metadataList := range metadataCache {
+				for _, metadata := range metadataList {
+					fmt.Printf("%s : %s/%s\n", ip, metadata.Name, metadata.Namespace)
+				}
+			}
+			cacheMutex.Unlock()
+		}
+	}()
 
 	// Keep the main goroutine running
 	select {}
