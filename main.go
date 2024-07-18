@@ -1,16 +1,39 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"net"
 	"os"
 	"path/filepath"
-	"sync"
-	"time"
 
-	"github.com/emilyhuaa/policyLogsEnhancement/pkg"
+	utils "github.com/emilyhuaa/policyLogsEnhancement/pkg"
+	pb "github.com/emilyhuaa/policyLogsEnhancement/pkg/rpc"
+	"google.golang.org/grpc"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
+
+type server struct {
+	pb.UnimplementedCacheServiceServer
+}
+
+func (s *server) GetCache(ctx context.Context, req *pb.CacheRequest) (*pb.CacheResponse, error) {
+	cache := utils.GetMetadataCache()
+
+	var cacheData []*pb.IPMetadata
+	for ip, metadata := range cache {
+		cacheData = append(cacheData, &pb.IPMetadata{
+			Ip: ip,
+			Metadata: &pb.Metadata{
+				Name:      metadata.Name,
+				Namespace: metadata.Namespace,
+			},
+		})
+	}
+	return &pb.CacheResponse{Data: cacheData}, nil
+}
 
 func main() {
 	userHomeDir, err := os.UserHomeDir()
@@ -33,45 +56,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	metadataCache := make(map[string][]pkg.Metadata)
-	var cacheMutex sync.Mutex
+	go utils.UpdateCache(clientset)
 
-	ticker := time.NewTicker(10 * time.Second)
-	go func() {
-		for range ticker.C {
-			pods, err := pkg.GetPods(clientset)
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
-
-			services, err := pkg.GetServices(clientset)
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
-
-			cacheMutex.Lock()
-			pkg.CacheMetadata(metadataCache, pods.Items, services.Items)
-			cacheMutex.Unlock()
-		}
-	}()
-
-	// Print the cache every 30 seconds
-	go func() {
-		for range ticker.C {
-			cacheMutex.Lock()
-			fmt.Println("IP Address : Name/Namespace")
-			for ip, metadataList := range metadataCache {
-				for _, metadata := range metadataList {
-					fmt.Printf("%s : %s/%s\n", ip, metadata.Name, metadata.Namespace)
-				}
-			}
-			cacheMutex.Unlock()
-		}
-	}()
-
-	// Keep the main goroutine running
-	select {}
-
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	grpcServer := grpc.NewServer()
+	pb.RegisterCacheServiceServer(grpcServer, &server{})
+	log.Printf("server listening at %v", lis.Addr())
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }

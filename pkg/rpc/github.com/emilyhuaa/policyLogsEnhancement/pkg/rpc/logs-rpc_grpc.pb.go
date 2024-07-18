@@ -19,17 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	CacheService_GetMetadataCache_FullMethodName = "/rpc.CacheService/GetMetadataCache"
+	CacheService_GetCache_FullMethodName = "/pb.CacheService/GetCache"
 )
 
 // CacheServiceClient is the client API for CacheService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// CacheService defines the RPC service for retrieving the metadataCache.
 type CacheServiceClient interface {
-	// GetMetadataCache retrieves the MetadataCache.
-	GetMetadataCache(ctx context.Context, in *GetCacheRequest, opts ...grpc.CallOption) (*GetCacheReply, error)
+	GetCache(ctx context.Context, in *CacheRequest, opts ...grpc.CallOption) (*CacheResponse, error)
 }
 
 type cacheServiceClient struct {
@@ -40,10 +37,10 @@ func NewCacheServiceClient(cc grpc.ClientConnInterface) CacheServiceClient {
 	return &cacheServiceClient{cc}
 }
 
-func (c *cacheServiceClient) GetMetadataCache(ctx context.Context, in *GetCacheRequest, opts ...grpc.CallOption) (*GetCacheReply, error) {
+func (c *cacheServiceClient) GetCache(ctx context.Context, in *CacheRequest, opts ...grpc.CallOption) (*CacheResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCacheReply)
-	err := c.cc.Invoke(ctx, CacheService_GetMetadataCache_FullMethodName, in, out, cOpts...)
+	out := new(CacheResponse)
+	err := c.cc.Invoke(ctx, CacheService_GetCache_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +50,8 @@ func (c *cacheServiceClient) GetMetadataCache(ctx context.Context, in *GetCacheR
 // CacheServiceServer is the server API for CacheService service.
 // All implementations must embed UnimplementedCacheServiceServer
 // for forward compatibility
-//
-// CacheService defines the RPC service for retrieving the metadataCache.
 type CacheServiceServer interface {
-	// GetMetadataCache retrieves the MetadataCache.
-	GetMetadataCache(context.Context, *GetCacheRequest) (*GetCacheReply, error)
+	GetCache(context.Context, *CacheRequest) (*CacheResponse, error)
 	mustEmbedUnimplementedCacheServiceServer()
 }
 
@@ -65,8 +59,8 @@ type CacheServiceServer interface {
 type UnimplementedCacheServiceServer struct {
 }
 
-func (UnimplementedCacheServiceServer) GetMetadataCache(context.Context, *GetCacheRequest) (*GetCacheReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMetadataCache not implemented")
+func (UnimplementedCacheServiceServer) GetCache(context.Context, *CacheRequest) (*CacheResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCache not implemented")
 }
 func (UnimplementedCacheServiceServer) mustEmbedUnimplementedCacheServiceServer() {}
 
@@ -81,20 +75,20 @@ func RegisterCacheServiceServer(s grpc.ServiceRegistrar, srv CacheServiceServer)
 	s.RegisterService(&CacheService_ServiceDesc, srv)
 }
 
-func _CacheService_GetMetadataCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCacheRequest)
+func _CacheService_GetCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CacheRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CacheServiceServer).GetMetadataCache(ctx, in)
+		return srv.(CacheServiceServer).GetCache(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CacheService_GetMetadataCache_FullMethodName,
+		FullMethod: CacheService_GetCache_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServiceServer).GetMetadataCache(ctx, req.(*GetCacheRequest))
+		return srv.(CacheServiceServer).GetCache(ctx, req.(*CacheRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -103,12 +97,12 @@ func _CacheService_GetMetadataCache_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CacheService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "rpc.CacheService",
+	ServiceName: "pb.CacheService",
 	HandlerType: (*CacheServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetMetadataCache",
-			Handler:    _CacheService_GetMetadataCache_Handler,
+			MethodName: "GetCache",
+			Handler:    _CacheService_GetCache_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

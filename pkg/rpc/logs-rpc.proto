@@ -2,38 +2,24 @@ syntax = "proto3";
 
 option go_package = "github.com/emilyhuaa/policyLogsEnhancement/pkg/rpc";
 
-package rpc;
+package pb;
 
-// Metadata represents information about a pod/srv.
-message Metadata {
-    // The name of the pod/srv.
-    string name = 1;
-
-    // The namespace of the pod/srv.
-    string namespace = 2;
+service CacheService {
+    rpc GetCache (CacheRequest) returns (CacheResponse);
 }
 
-// MetadataInfoCacheEntry represents an entry in the metadataInfoCache.
-message MetadataCacheEntry {
-    // The IP address of the pod/srv (key).
-    string ip = 1;
+message CacheRequest {}
 
-    // The metadata information (value).
+message CacheResponse {
+    repeated IPMetadata data = 1;
+}
+
+message IPMetadata {
+    string ip = 1;
     Metadata metadata = 2;
 }
 
-// GetCacheRequest represents a request to retrieve the metadataInfoCache.
-message GetCacheRequest {}
-
-// GetCacheReply represents the response containing the metadataInfoCache.
-message GetCacheReply {
-    // The list of metadataCache entries.
-    repeated MetadataCacheEntry entries = 1;
+message Metadata {
+    string name = 1;
+    string namespace = 2;
 }
-
-// CacheService defines the RPC service for retrieving the metadataCache.
-service CacheService {
-    // GetMetadataCache retrieves the MetadataCache.
-    rpc GetMetadataCache(GetCacheRequest) returns (GetCacheReply) {}
-}
-
