@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	utils "github.com/emilyhuaa/policyLogsEnhancement/pkg"
 	pb "github.com/emilyhuaa/policyLogsEnhancement/pkg/rpc"
+	utils "github.com/emilyhuaa/policyLogsEnhancement/pkg/utils"
 	"google.golang.org/grpc"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
