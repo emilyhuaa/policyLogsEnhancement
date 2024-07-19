@@ -2,10 +2,10 @@ package utils
 
 import (
 	"context"
-	"log"
 	"sync"
 	"time"
 
+	"github.com/go-logr/logr"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -16,7 +16,10 @@ type Metadata struct {
 	Namespace string
 }
 
-var MetadataCache = make(map[string]Metadata)
+var (
+	MetadataCache = make(map[string]Metadata)
+	Logger        logr.Logger
+)
 var CacheMutex sync.Mutex
 
 // CacheMetadata caches pod and service information by IP address
@@ -51,7 +54,7 @@ func CacheMetadata(metadataCache map[string]Metadata, pods []v1.Pod, services []
 	}
 }
 
-func UpdateCache(client kubernetes.Interface) {
+func UpdateCache(client kubernetes.Interface, log logr.Logger) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -60,18 +63,18 @@ func UpdateCache(client kubernetes.Interface) {
 		case <-ticker.C:
 			pods, err := client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 			if err != nil {
-				log.Printf("Error getting pods: %v", err)
+				log.Error(err, "Error getting pods")
 				continue
 			}
 			services, err := client.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
 			if err != nil {
-				log.Printf("Error getting services: %v", err)
+				log.Error(err, "Error getting services")
 				continue
 			}
 			CacheMutex.Lock()
 			CacheMetadata(MetadataCache, pods.Items, services.Items)
 			CacheMutex.Unlock()
-			log.Println("Updated Metadata Cache")
+			log.Info("Updated Metadata Cache")
 		}
 	}
 }

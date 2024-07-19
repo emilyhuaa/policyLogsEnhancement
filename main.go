@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -10,6 +9,7 @@ import (
 
 	pb "github.com/emilyhuaa/policyLogsEnhancement/pkg/rpc"
 	utils "github.com/emilyhuaa/policyLogsEnhancement/pkg/utils"
+	"github.com/go-logr/stdr"
 	"google.golang.org/grpc"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -36,36 +36,41 @@ func (s *server) GetCache(ctx context.Context, req *pb.CacheRequest) (*pb.CacheR
 }
 
 func main() {
+	stdLogger := log.New(os.Stderr, "", log.LstdFlags)
+	utils.Logger = stdr.New(stdLogger)
+
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Printf("Error getting user home dir: %v\n", err)
+		utils.Logger.Error(err, "Error getting user home dir")
 		os.Exit(1)
 	}
 	kubeConfigPath := filepath.Join(userHomeDir, ".kube", "config")
 
 	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
-		fmt.Printf("Error getting kubernetes config: %v\n", err)
+		utils.Logger.Error(err, "Error getting kubernetes config")
 		os.Exit(1)
 	}
 
 	clientset, err := kubernetes.NewForConfig(kubeConfig)
 
 	if err != nil {
-		fmt.Printf("Error getting kubernetes config: %v\n", err)
+		utils.Logger.Error(err, "Failed to create Kubernetes clientset")
 		os.Exit(1)
 	}
 
-	go utils.UpdateCache(clientset)
+	go utils.UpdateCache(clientset, utils.Logger)
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		utils.Logger.Error(err, "failed to listen")
+		os.Exit(1)
 	}
 	grpcServer := grpc.NewServer()
 	pb.RegisterCacheServiceServer(grpcServer, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		utils.Logger.Error(err, "failed to serve")
+		os.Exit(1)
 	}
 }
