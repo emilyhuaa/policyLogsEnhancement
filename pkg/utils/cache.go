@@ -74,7 +74,7 @@ func UpdateCache(client kubernetes.Interface) {
 			CacheMutex.Lock()
 			CacheMetadata(MetadataCache, pods.Items, services.Items)
 			CacheMutex.Unlock()
-			Logger.Info("Updated Metadata Cache")
+			Logger.Info("Updated Metadata Cache", "Cache", MetadataCache)
 		}
 	}
 }
