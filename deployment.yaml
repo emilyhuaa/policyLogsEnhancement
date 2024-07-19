@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: metadata-cache
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -33,6 +34,6 @@ spec:
               name: "kube-root-ca.crt"
               items:
                 - key: "ca.crt"
-                  path: "tlsCaCert"
+                  path: "ca.crt"
 
 
