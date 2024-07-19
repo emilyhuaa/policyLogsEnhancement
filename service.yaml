@@ -9,4 +9,3 @@ spec:
     - protocol: TCP
       port: 50051
       targetPort: 50051
-  type: ClusterIP

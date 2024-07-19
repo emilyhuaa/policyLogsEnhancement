@@ -5,14 +5,13 @@ import (
 	"log"
 	"net"
 	"os"
-	"path/filepath"
 
 	pb "github.com/emilyhuaa/policyLogsEnhancement/pkg/rpc"
 	utils "github.com/emilyhuaa/policyLogsEnhancement/pkg/utils"
 	"github.com/go-logr/stdr"
 	"google.golang.org/grpc"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
 )
 
 type server struct {
@@ -39,27 +38,19 @@ func main() {
 	stdLogger := log.New(os.Stderr, "", log.LstdFlags)
 	utils.Logger = stdr.New(stdLogger)
 
-	userHomeDir, err := os.UserHomeDir()
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		utils.Logger.Error(err, "Error getting user home dir")
-		os.Exit(1)
-	}
-	kubeConfigPath := filepath.Join(userHomeDir, ".kube", "config")
-
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
-	if err != nil {
-		utils.Logger.Error(err, "Error getting kubernetes config")
+		utils.Logger.Error(err, "Failed to get in-cluster config")
 		os.Exit(1)
 	}
 
-	clientset, err := kubernetes.NewForConfig(kubeConfig)
-
+	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		utils.Logger.Error(err, "Failed to create Kubernetes clientset")
 		os.Exit(1)
 	}
 
-	go utils.UpdateCache(clientset, utils.Logger)
+	go utils.UpdateCache(clientset)
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
@@ -68,7 +59,7 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	pb.RegisterCacheServiceServer(grpcServer, &server{})
-	log.Printf("server listening at %v", lis.Addr())
+	utils.Logger.Info("server listening", "address", lis.Addr())
 	if err := grpcServer.Serve(lis); err != nil {
 		utils.Logger.Error(err, "failed to serve")
 		os.Exit(1)

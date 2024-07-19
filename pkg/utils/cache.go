@@ -54,7 +54,7 @@ func CacheMetadata(metadataCache map[string]Metadata, pods []v1.Pod, services []
 	}
 }
 
-func UpdateCache(client kubernetes.Interface, log logr.Logger) {
+func UpdateCache(client kubernetes.Interface) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -63,18 +63,18 @@ func UpdateCache(client kubernetes.Interface, log logr.Logger) {
 		case <-ticker.C:
 			pods, err := client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 			if err != nil {
-				log.Error(err, "Error getting pods")
+				Logger.Error(err, "Error getting pods")
 				continue
 			}
 			services, err := client.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
 			if err != nil {
-				log.Error(err, "Error getting services")
+				Logger.Error(err, "Error getting services")
 				continue
 			}
 			CacheMutex.Lock()
 			CacheMetadata(MetadataCache, pods.Items, services.Items)
 			CacheMutex.Unlock()
-			log.Info("Updated Metadata Cache")
+			Logger.Info("Updated Metadata Cache")
 		}
 	}
 }

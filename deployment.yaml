@@ -15,19 +15,13 @@ spec:
       containers:
       - name: metadata-cache
         image: 992382695827.dkr.ecr.us-west-2.amazonaws.com/emilyhua/log-enhancement:latest
-        env:
-          - name: KUBERNETES_SERVICE_HOST
-            value: "kubernetes.default.svc"
-          - name: KUBERNETES_SERVICE_PORT
-            value: "443"
-          - name: CACHE_UPDATE_INTERVAL
-            value: "10"
         ports:
         - containerPort: 50051
         volumeMounts:
           - name: kube-api-access
             mountPath: /var/run/secrets/kubernetes.io/serviceaccount
             readOnly: true
+      serviceAccountName: default
       volumes:
       - name: kube-api-access
         projected:
@@ -40,10 +34,5 @@ spec:
               items:
                 - key: "ca.crt"
                   path: "tlsCaCert"
-          - downwardAPI:
-              items:
-                - path: "namespace"
-                  fieldRef:
-                    fieldPath: metadata.namespace
 
 
