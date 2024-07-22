@@ -31,11 +31,11 @@ func CacheMetadata(metadataCache map[string]Metadata, pods []v1.Pod, services []
 		podIP := pod.Status.PodIP
 
 		if podIP == pod.Status.HostIP {
-			continue
+			metadataCache[podIP] = Metadata{Name: "cip", Namespace: "cip"}
+		} else {
+			metadataCache[podIP] = Metadata{Name: pod.Name, Namespace: pod.Namespace}
+			currentIPs[podIP] = struct{}{}
 		}
-
-		metadataCache[podIP] = Metadata{Name: pod.Name, Namespace: pod.Namespace}
-		currentIPs[podIP] = struct{}{}
 	}
 
 	// Cache service metadata
