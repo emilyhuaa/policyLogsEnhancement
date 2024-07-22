@@ -31,7 +31,7 @@ func CacheMetadata(metadataCache map[string]Metadata, pods []v1.Pod, services []
 		podIP := pod.Status.PodIP
 
 		if podIP == pod.Status.HostIP {
-			metadataCache[podIP] = Metadata{Name: "cip", Namespace: "cip"}
+			metadataCache[podIP] = Metadata{Name: "hip", Namespace: "hip"}
 		} else {
 			metadataCache[podIP] = Metadata{Name: pod.Name, Namespace: pod.Namespace}
 			currentIPs[podIP] = struct{}{}
