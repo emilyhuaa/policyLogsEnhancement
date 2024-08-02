@@ -52,7 +52,7 @@ func main() {
 
 	go utils.UpdateCache(clientset)
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", "localhost:50051")
 	if err != nil {
 		utils.Logger.Error(err, "failed to listen")
 		os.Exit(1)

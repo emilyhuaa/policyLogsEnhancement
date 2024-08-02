@@ -18,22 +18,6 @@ spec:
         image: 992382695827.dkr.ecr.us-west-2.amazonaws.com/emilyhua/log-enhancement:latest
         ports:
         - containerPort: 50051
-        volumeMounts:
-          - name: kube-api-access
-            mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-            readOnly: true
       serviceAccountName: default
-      volumes:
-      - name: kube-api-access
-        projected:
-          sources:
-          - serviceAccountToken:
-              path: token
-              expirationSeconds: 3600
-          - configMap:
-              name: "kube-root-ca.crt"
-              items:
-                - key: "ca.crt"
-                  path: "ca.crt"
 
 

@@ -23,7 +23,7 @@ var (
 var CacheMutex sync.Mutex
 
 // CacheMetadata caches pod and service information by IP address
-func CacheMetadata(metadataCache map[string]Metadata, pods []v1.Pod, services []v1.Service) {
+func UpdateMetadataCache(metadataCache map[string]Metadata, pods []v1.Pod, services []v1.Service) {
 	// Create a set of IP addresses from the current pod and service data
 	currentIPs := make(map[string]struct{})
 
@@ -55,6 +55,56 @@ func CacheMetadata(metadataCache map[string]Metadata, pods []v1.Pod, services []
 	}
 }
 
+// // CacheMetadata caches pod and service information by IP address
+// func UpdateMetadataCache(metadataCache map[string]Metadata, pods []v1.Pod, services []v1.Service) {
+//     // Create a slice to store current IP addresses
+//     var currentIPs []string
+
+//     for _, pod := range pods {
+//         podIP := pod.Status.PodIP
+
+//         if podIP == pod.Status.HostIP {
+//             metadataCache[podIP] = Metadata{Name: "hostIP", Namespace: "hostIP"}
+//         } else {
+//             metadataCache[podIP] = Metadata{Name: pod.Name, Namespace: pod.Namespace}
+//         }
+
+//         // Add the IP address to the currentIPs slice if it doesn't exist
+//         if !contains(currentIPs, podIP) {
+//             currentIPs = append(currentIPs, podIP)
+//         }
+//     }
+
+//     // Cache service metadata
+//     for _, srv := range services {
+//         srvIP := srv.Spec.ClusterIP
+
+//         metadataCache[srvIP] = Metadata{Name: srv.Name, Namespace: srv.Namespace}
+
+//         // Add the IP address to the currentIPs slice if it doesn't exist
+//         if !contains(currentIPs, srvIP) {
+//             currentIPs = append(currentIPs, srvIP)
+//         }
+//     }
+
+//     // Remove entries from the cache for IPs that are no longer present
+//     for ip := range metadataCache {
+//         if !contains(currentIPs, ip) {
+//             delete(metadataCache, ip)
+//         }
+//     }
+// }
+
+// // contains checks if a string is present in a slice
+// func contains(slice []string, str string) bool {
+//     for _, s := range slice {
+//         if s == str {
+//             return true
+//         }
+//     }
+//     return false
+// }
+
 func UpdateCache(client kubernetes.Interface) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
@@ -73,7 +123,7 @@ func UpdateCache(client kubernetes.Interface) {
 				continue
 			}
 			CacheMutex.Lock()
-			CacheMetadata(MetadataCache, pods.Items, services.Items)
+			UpdateMetadataCache(MetadataCache, pods.Items, services.Items)
 			CacheMutex.Unlock()
 			Logger.Info("Updated Metadata Cache", "Cache", MetadataCache)
 		}

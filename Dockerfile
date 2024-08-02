@@ -1,5 +1,5 @@
 # Use a lightweight base image
-FROM golang:1.22
+FROM public.ecr.aws/docker/library/golang:1.22.0
 
 ENV GOPROXY=direct
 
