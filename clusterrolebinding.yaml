@@ -1,12 +1,27 @@
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: metadata-cache-clusterrolebinding
+  name: eks:np-agent-service-reader
+subjects:
+- kind: ServiceAccount
+  name: np-agent
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: eks:service-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eks:metadata-cache-binding
 subjects:
 - kind: ServiceAccount
   name: metadata-cache-serviceaccount
   namespace: default
 roleRef:
   kind: ClusterRole
-  name: metadata-cache-clusterrole
+  name: eks:pod-reader
   apiGroup: rbac.authorization.k8s.io

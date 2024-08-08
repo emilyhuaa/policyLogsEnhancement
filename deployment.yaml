@@ -16,6 +16,7 @@ spec:
       containers:
       - name: metadata-cache
         image: 992382695827.dkr.ecr.us-west-2.amazonaws.com/emilyhua/log-enhancement:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 50051
       serviceAccountName: default

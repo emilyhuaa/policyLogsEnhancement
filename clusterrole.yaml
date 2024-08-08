@@ -1,7 +1,18 @@
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: metadata-cache-clusterrole
+  name: eks:service-reader
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eks:pod-reader
 rules:
 - apiGroups: [""]
   resources: ["pods", "services"]
