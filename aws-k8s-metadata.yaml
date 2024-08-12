@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: metadata-cache-serviceaccount
+  namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metadata-cache
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metadata-cache
+  template:
+    metadata:
+      labels:
+        app: metadata-cache
+    spec:
+      containers:
+      - name: metadata-cache
+        image: 992382695827.dkr.ecr.us-west-2.amazonaws.com/emilyhua/log-enhancement:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 50051
+      serviceAccountName: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metadata-cache-service
+  namespace: default
+  labels:
+    app: metadata-cache
+spec:
+  selector:
+    app: metadata-cache
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eks:service-reader
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eks:pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eks:np-agent-service-reader
+subjects:
+- kind: ServiceAccount
+  name: np-agent
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: eks:service-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eks:metadata-cache-binding
+subjects:
+- kind: ServiceAccount
+  name: metadata-cache-serviceaccount
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: eks:pod-reader
+  apiGroup: rbac.authorization.k8s.io
